@@ -21,4 +21,4 @@ EXPOSE ${FOF_PORT}/udp ${FOF_PORT}/tcp
 
 # entrypoint
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["-game", "garrysmod", "+gamemode", "sandbox", "+map", "gm_flatgrass"]
+CMD ["-game", "fof", "+maxplayers", "20", "+map", "fof_fistful"]
