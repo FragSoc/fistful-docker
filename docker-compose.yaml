@@ -1,0 +1,11 @@
+version: "3"
+   
+services:
+  fof:
+    build: .
+    volumes:
+      - ./fof-data/:/home/steam/fof-dedicated/
+    network_mode: "host"
+    environment: 
+      - SRCDS_PORT=27015
+      - SRCDS_TOKEN=0

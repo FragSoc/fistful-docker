@@ -1,24 +1,36 @@
-FROM zennoe/steamcmd:latest
+#####################################################################
+# Dockerfile that builds a FoF Gameserver - modified from CS Scrim  #
+#####################################################################
+FROM cm2network/steamcmd:root
 
-# switch to steam user
-USER steam
+ENV STEAMAPPID 295230
+ENV STEAMAPP fof
+ENV STEAMAPPDIR "${HOMEDIR}/${STEAMAPP}-dedicated"
 
-# Gmod port
-ENV FOF_PORT=27015
+COPY entry.sh ${HOMEDIR}/entry.sh
+RUN set -x \
+	&& mkdir -p "${STEAMAPPDIR}" \
+	&& { \
+		echo '@ShutdownOnFailedCommand 1'; \
+		echo '@NoPromptForPassword 1'; \
+		echo 'login anonymous'; \
+		echo 'force_install_dir '"${STEAMAPPDIR}"''; \
+		echo 'app_update '"${STEAMAPPID}"''; \
+		echo 'quit'; \
+	   } > "${HOMEDIR}/${STEAMAPP}_update.txt" \
+	&& chmod +x "${HOMEDIR}/entry.sh" \
+	&& chown -R "${USER}:${USER}" "${HOMEDIR}/entry.sh" "${STEAMAPPDIR}" "${HOMEDIR}/${STEAMAPP}_update.txt" \
+	&& rm -rf /var/lib/apt/lists/* 
+	
+ENV SRCDS_PORT=27015
+ENV SRCDS_TOKEN=0
 
-ENV LD_LIBRARY_PATH=/opt/fof/bin
+USER ${USER}
 
-# add docker-entrypoint.sh and fix permissions
-COPY docker-entrypoint.sh /usr/local/bin/
-USER root
-RUN chmod 777 /usr/local/bin/docker-entrypoint.sh && \
-    mkdir /opt/fof
-USER steam
+VOLUME ${STEAMAPPDIR}
 
+WORKDIR ${HOMEDIR}
 
-VOLUME /opt/fof
-EXPOSE ${FOF_PORT}/udp ${FOF_PORT}/tcp
+EXPOSE ${SRCDS_PORT}/udp ${SRCDS_PORT}/tcp
 
-# entrypoint
-ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["-game", "fof", "+maxplayers", "20", "+map", "fof_fistful"]
+CMD ["bash", "entry.sh"]
